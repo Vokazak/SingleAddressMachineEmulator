@@ -3,6 +3,7 @@ package ru.vokazak;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -14,6 +15,8 @@ public class Lexer {
     private boolean exhausted = false;
     private String errorMessage = "";
     private Set<Character> blankChars = new HashSet<Character>();
+
+    private ArrayList<Lexem> lexems = new ArrayList<>();
 
     public Lexer(String filePath) {
         try (Stream<String> st = Files.lines(Paths.get(filePath))) {
@@ -33,6 +36,19 @@ public class Lexer {
         blankChars.add((char) 32);  //space
 
         moveAhead();
+
+        while (!isExhausted()) {
+            lexems.add(new Lexem(currentToken(), currentLexema()));
+            moveAhead();
+        }
+
+        if (!isSuccessful())
+            System.out.println(errorMessage());
+
+    }
+
+    public ArrayList<Lexem> getLexemList() {
+        return lexems;
     }
 
     public void moveAhead() {
