@@ -44,6 +44,13 @@ public class Lexer {
 
         if (!isSuccessful())
             System.out.println(errorMessage());
+/*
+        System.out.println("Lexem list:");
+        for (Lexem lexem: lexems) {
+            System.out.println("Token: " + lexem.getToken() + ", Value: " + lexem.getValue());
+        }
+
+ */
 
     }
 

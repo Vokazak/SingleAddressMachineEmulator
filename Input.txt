@@ -25,5 +25,5 @@ loop:
 
 	GET 10
 	COMP 11
-	END
+
 	CALL loop
