@@ -16,6 +16,7 @@ public class SingleAddressMachine {
     private boolean flagEquals = false;
     private boolean flagGreater = false;
 
+    private String machineErrorMessage = "";
 
     SingleAddressMachine(ArrayList<String> commandMemory) {
         this.commandMemory = commandMemory;
@@ -26,14 +27,13 @@ public class SingleAddressMachine {
         }
 
         runCommand(0);
-
     }
 
     private void runCommand(int commandIndex) {
-        String command = commandMemory.get(commandIndex); //TODO command out of command list
+        String command = commandMemory.get(commandIndex); //TODO index is out of bounds
         String commandName = command.substring(0, 3);
         String data = command.substring(3);
-        int address = Integer.parseInt(data.substring(0, ADDRESS_LENGTH), 2); //TODO address out of bounds
+        int address = Integer.parseInt(data.substring(0, ADDRESS_LENGTH), 2);
         int info = Integer.parseInt(data.substring(ADDRESS_LENGTH), 2);
 
         switch (Integer.parseInt(commandName)) {
@@ -63,7 +63,7 @@ public class SingleAddressMachine {
             case 11:
                 System.out.println("INC");
                 acc ++;
-                System.out.println("\tAcc: " + acc); //TODO value out of range (>31)
+                System.out.println("\tAcc: " + acc);
                 runCommand(commandIndex + 1);
                 break;
 
@@ -88,7 +88,8 @@ public class SingleAddressMachine {
                 return;
 
             default:
-                System.out.println("BRUH");
+                System.out.println("Unknown command");
+                machineErrorMessage = "Machine: Unknown command " + commandName;
                 break;
         }
     }

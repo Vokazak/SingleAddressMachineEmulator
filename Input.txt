@@ -13,7 +13,7 @@
 	LOAD 1 	PUT 11
 	GET 0   PUT 12
 
-loop:
+    loop:
 	GET 12
 	COMP [11]
 	GET [11]

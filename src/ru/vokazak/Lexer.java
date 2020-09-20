@@ -13,7 +13,7 @@ class Lexer {
     private Token token;
     private String lexeme;
     private boolean exhausted = false;
-    private String errorMessage = "";
+    private String lexerErrorMessage = "";
     private Set<Character> blankChars = new HashSet<>();
 
     private ArrayList<Lexem> lexemes = new ArrayList<>();
@@ -23,7 +23,7 @@ class Lexer {
             st.forEach(input::append);
         } catch (IOException ex) {
             exhausted = true;
-            errorMessage = "Could not read file: " + filePath;
+            lexerErrorMessage = "Lexer error: Could not read file: " + filePath;
             return;
         }
 
@@ -42,13 +42,26 @@ class Lexer {
             moveAhead();
         }
 
-        if (!errorMessage.isEmpty())
-            System.out.println(errorMessage);
-
     }
 
-    ArrayList<Lexem> getLexemList() {
+    ArrayList<Lexem> getLexemeList() {
         return lexemes;
+    }
+
+    void printLexemeList() {
+        System.out.println("Lexeme list:");
+        for (Lexem lexeme: lexemes)
+            System.out.println("\t" + lexeme.getValue());
+    }
+
+    boolean isLexerErrorMessage() {
+        if (!lexerErrorMessage.isEmpty()) {
+            return true;
+        } else return false;
+    }
+
+    String getLexerErrorMessage() {
+        return lexerErrorMessage;
     }
 
     private void moveAhead() {
@@ -70,7 +83,7 @@ class Lexer {
         exhausted = true;
 
         if (input.length() > 0) {
-            errorMessage = "Unexpected symbol: '" + input.charAt(0) + "'";
+            lexerErrorMessage = "Lexer error: Unexpected symbol: '" + input.charAt(0) + "'";
         }
     }
 

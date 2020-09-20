@@ -3,94 +3,98 @@ package ru.vokazak;
 import java.util.ArrayList;
 
 class Parser {
-    private ArrayList<Lexem> lexemList;
+    private ArrayList<Lexem> lexemeList;
     private int globalIndex;
-    private boolean syntaxError;
     private boolean isExhausted;
+
+    private String parserErrorMessage = "";
 
     private ArrayList<String> commandList = new ArrayList<>();
     private ArrayList<Loop> loops = new ArrayList();
 
     Parser(ArrayList<Lexem> lexemList) {
-        this.lexemList = lexemList;
+        this.lexemeList = lexemList;
         globalIndex = 0;
-        syntaxError = false;
         isExhausted = false;
 
         while (!isExhausted) {
-            if (syntaxError)
+            if (!parserErrorMessage.isEmpty())
                 break;
             parse();
         }
-        /*
+
         checkLoops();
+    }
 
-        for (Loop loop: loops) {
-            System.out.println("Name: " + loop.getName());
-            System.out.println("Jump address: " + loop.getJumpAddress());
-        }
+    boolean isParserErrorMessage() {
+        if (!parserErrorMessage.isEmpty())
+            return true;
+        else return false;
+    }
 
-        for (int i = 0; i < commandList.size(); i++) {
-            System.out.println("Command: " + commandList.get(i) + " (index: " + i + ")");
-        }
-
-         */
+    public String getParserErrorMessage() {
+        return parserErrorMessage;
     }
 
     ArrayList<String> getCommandList() {
         return commandList;
     }
 
+    void printCommandList() {
+        System.out.println("\nCommand list:");
+        for (int i = 0; i < commandList.size(); i++) {
+            System.out.println("\tCommand: " + commandList.get(i) + " (index: " + i + ")");
+        }
+    }
+
     private String getBinaryString(String decimalString) {
-        String binaryStirng = Integer.toBinaryString(Integer.parseInt(decimalString, 10));
-        while (binaryStirng.length() <5)
-            binaryStirng = "0".concat(binaryStirng);
-        return binaryStirng;
+        String binaryString = Integer.toBinaryString(Integer.parseInt(decimalString, 10));
+        while (binaryString.length() <5)
+            binaryString = "0".concat(binaryString);
+        return binaryString;
     }
 
     private void setIndirectAddress(String command) {
-        if (lexemList.get(globalIndex).getToken() == Token.ADDR) {
-            String value = lexemList.get(globalIndex).getValue();
+        if (lexemeList.get(globalIndex).getToken() == Token.ADDR) {
+            String value = lexemeList.get(globalIndex).getValue();
             value = value.substring(1, value.length() - 1);
             commandList.add(command + getBinaryString(value) + "11111");
-        } else syntaxError = true;
+        } else parserErrorMessage = "Parser error: Expected integer, found " + lexemeList.get(globalIndex).getValue();
     }
 
     private void setDirectAddress(String command) {
        globalIndex ++;
-        if (lexemList.get(globalIndex).getToken() == Token.INTEGER) {
-            commandList.add(command + getBinaryString(lexemList.get(globalIndex).getValue()) + "00000");
+        if (lexemeList.get(globalIndex).getToken() == Token.INTEGER) {
+            commandList.add(command + getBinaryString(lexemeList.get(globalIndex).getValue()) + "00000");
         } else setIndirectAddress(command);
     }
 
     private void checkData() {
         globalIndex ++;
-        if (lexemList.get(globalIndex).getToken() == Token.INTEGER) {
-            commandList.add("00000000" + getBinaryString(lexemList.get(globalIndex).getValue()));
-        } else syntaxError = true;
+        if (lexemeList.get(globalIndex).getToken() == Token.INTEGER) {
+            commandList.add("00000000" + getBinaryString(lexemeList.get(globalIndex).getValue()));
+        } else parserErrorMessage = "Parser error: Expected integer, found " + lexemeList.get(globalIndex).getValue();
     }
 
     private void checkLabel() {
-        String loopName = lexemList.get(globalIndex).getValue();
+        String loopName = lexemeList.get(globalIndex).getValue();
         loopName = loopName.substring(0, loopName.length() - 1);
         loops.add(new Loop(loopName, commandList.size()));
 
         for (int i = 0; i < commandList.size(); i++) {
             if (commandList.get(i).substring(3).equals(loopName)) {
                 commandList.set(i, "101" + getBinaryString(String.valueOf(commandList.size())) + "00000");
-                //commandList.remove(i + 1);
             }
         }
-        //commandList.add("110" + loopName);
     }
 
     private void setJumpAddress() {
         boolean found = false;
         globalIndex ++;
-        if (lexemList.get(globalIndex).getToken() == Token.LABEL_NAME) {
+        if (lexemeList.get(globalIndex).getToken() == Token.LABEL_NAME) {
             if (!loops.isEmpty()) {
                 for (Loop loop : loops) {
-                    if (lexemList.get(globalIndex).getValue().equals(loop.getName())) {
+                    if (lexemeList.get(globalIndex).getValue().equals(loop.getName())) {
                         commandList.add("101" + getBinaryString(String.valueOf(loop.getJumpAddress())) + "00000");
                         found = true;
                     }
@@ -98,48 +102,49 @@ class Parser {
             }
 
             if (!found) {
-                commandList.add("101" + lexemList.get(globalIndex).getValue());
+                commandList.add("101" + lexemeList.get(globalIndex).getValue());
             }
-        } else syntaxError = true;
+        } else parserErrorMessage = "Parser error: Expected loop name, found " + lexemeList.get(globalIndex).getValue();
     }
     
-    private void checkLoops() { //TODO check loops
+    private void checkLoops() {
         if (!loops.isEmpty()) {
             for (String command : commandList) {
-                if (command.contains("[a-z]+"))
-                    syntaxError = true;
+                if (command.substring(0, 3).equals("101") && (command.length() != 13 || !command.substring(8).equals("00000"))) {
+                    parserErrorMessage = "Parser error: Loops are incorrect";
+                    break;
+                }
             }
-            if (syntaxError) System.out.println("Loops are incorrect");
-        } else System.out.println("Loops are not found");
+        }
     }
 
     private void parse() {
 
-        if (lexemList.size() <= globalIndex) {
+        if (lexemeList.size() <= globalIndex) {
             isExhausted = true;
             return;
         }
 
-        Token currentToken = lexemList.get(globalIndex).getToken();
+        Token currentToken = lexemeList.get(globalIndex).getToken();
 
-        if (currentToken == Token.CMD_LOAD && !syntaxError)
+        if (currentToken == Token.CMD_LOAD && parserErrorMessage.isEmpty())
             checkData();
-        else if (currentToken == Token.CMD_PUT && !syntaxError) //TODO: index out of bounds when put
+        else if (currentToken == Token.CMD_PUT && parserErrorMessage.isEmpty())
             setDirectAddress("001");
-        else if (currentToken == Token.CMD_GET && !syntaxError) //TODO: index out of bounds when get
+        else if (currentToken == Token.CMD_GET && parserErrorMessage.isEmpty())
             setDirectAddress("010");
-        else if (currentToken == Token.CMD_INC && !syntaxError)
+        else if (currentToken == Token.CMD_INC && parserErrorMessage.isEmpty())
             commandList.add("0110000000000");
-        else if (currentToken == Token.CMD_COMP && !syntaxError)
+        else if (currentToken == Token.CMD_COMP && parserErrorMessage.isEmpty())
             setDirectAddress("100");
-        else if (currentToken == Token.CMD_JMP && !syntaxError)
+        else if (currentToken == Token.CMD_JMP && parserErrorMessage.isEmpty())
             setJumpAddress();
-        else if (currentToken == Token.LABEL && !syntaxError)
+        else if (currentToken == Token.LABEL && parserErrorMessage.isEmpty())
             checkLabel();
-        else if (currentToken == Token.END && !syntaxError)
+        else if (currentToken == Token.END && parserErrorMessage.isEmpty())
             commandList.add("1110000000000");
         else
-            syntaxError = true;
+            parserErrorMessage = "Parser error: Found an argument without command";
 
         globalIndex ++;
     }
