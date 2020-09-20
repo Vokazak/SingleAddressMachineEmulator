@@ -8,17 +8,17 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public class Lexer {
+class Lexer {
     private StringBuilder input = new StringBuilder();
     private Token token;
-    private String lexema;
+    private String lexeme;
     private boolean exhausted = false;
     private String errorMessage = "";
-    private Set<Character> blankChars = new HashSet<Character>();
+    private Set<Character> blankChars = new HashSet<>();
 
-    private ArrayList<Lexem> lexems = new ArrayList<>();
+    private ArrayList<Lexem> lexemes = new ArrayList<>();
 
-    public Lexer(String filePath) {
+    Lexer(String filePath) {
         try (Stream<String> st = Files.lines(Paths.get(filePath))) {
             st.forEach(input::append);
         } catch (IOException ex) {
@@ -38,19 +38,20 @@ public class Lexer {
         moveAhead();
 
         while (!exhausted) {
-            lexems.add(new Lexem(token, lexema));
+            lexemes.add(new Lexem(token, lexeme));
             moveAhead();
         }
 
         if (!errorMessage.isEmpty())
             System.out.println(errorMessage);
+
     }
 
-    public ArrayList<Lexem> getLexemList() {
-        return lexems;
+    ArrayList<Lexem> getLexemList() {
+        return lexemes;
     }
 
-    public void moveAhead() {
+    private void moveAhead() {
         if (exhausted) {
             return;
         }
@@ -77,7 +78,7 @@ public class Lexer {
         int charsToDelete = 0;
 
         while (blankChars.contains(input.charAt(charsToDelete))) {
-            charsToDelete++;
+            charsToDelete ++;
         }
 
         if (charsToDelete > 0) {
@@ -91,7 +92,7 @@ public class Lexer {
 
             if (end != -1) {
                 token = t;
-                lexema = input.substring(0, end);
+                lexeme = input.substring(0, end);
                 input.delete(0, end);
                 return true;
             }

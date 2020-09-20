@@ -17,7 +17,7 @@ public enum Token {
     INTEGER ("\\d+"),
     LABEL_NAME ("[a-z]+"),
 
-    COMMENT ("//[\\r\\n]!"),
+    //COMMENT ("//[\\r\\n]!"),
 
     END ("END");
 

@@ -2,7 +2,7 @@ package ru.vokazak;
 
 import java.util.ArrayList;
 
-public class Parser {
+class Parser {
     private ArrayList<Lexem> lexemList;
     private int globalIndex;
     private boolean syntaxError;
@@ -22,7 +22,7 @@ public class Parser {
                 break;
             parse();
         }
-        
+        /*
         checkLoops();
 
         for (Loop loop: loops) {
@@ -33,9 +33,11 @@ public class Parser {
         for (int i = 0; i < commandList.size(); i++) {
             System.out.println("Command: " + commandList.get(i) + " (index: " + i + ")");
         }
+
+         */
     }
 
-    public ArrayList<String> getCommandList() {
+    ArrayList<String> getCommandList() {
         return commandList;
     }
 
@@ -46,7 +48,7 @@ public class Parser {
         return binaryStirng;
     }
 
-    private void checkIndirectAddress (String command) {
+    private void setIndirectAddress(String command) {
         if (lexemList.get(globalIndex).getToken() == Token.ADDR) {
             String value = lexemList.get(globalIndex).getValue();
             value = value.substring(1, value.length() - 1);
@@ -54,11 +56,11 @@ public class Parser {
         } else syntaxError = true;
     }
 
-    private void checkDirectAddress(String command) {
+    private void setDirectAddress(String command) {
        globalIndex ++;
         if (lexemList.get(globalIndex).getToken() == Token.INTEGER) {
             commandList.add(command + getBinaryString(lexemList.get(globalIndex).getValue()) + "00000");
-        } else checkIndirectAddress(command);
+        } else setIndirectAddress(command);
     }
 
     private void checkData() {
@@ -75,8 +77,8 @@ public class Parser {
 
         for (int i = 0; i < commandList.size(); i++) {
             if (commandList.get(i).substring(3).equals(loopName)) {
-                commandList.add(i, "101" + getBinaryString(String.valueOf(commandList.size())) + "00000");
-                commandList.remove(i + 1);
+                commandList.set(i, "101" + getBinaryString(String.valueOf(commandList.size())) + "00000");
+                //commandList.remove(i + 1);
             }
         }
         //commandList.add("110" + loopName);
@@ -101,11 +103,11 @@ public class Parser {
         } else syntaxError = true;
     }
     
-    private void checkLoops() {
+    private void checkLoops() { //TODO check loops
         if (!loops.isEmpty()) {
             for (String command : commandList) {
-                command.contains("[a-z]+");
-                syntaxError = true;
+                if (command.contains("[a-z]+"))
+                    syntaxError = true;
             }
             if (syntaxError) System.out.println("Loops are incorrect");
         } else System.out.println("Loops are not found");
@@ -122,14 +124,14 @@ public class Parser {
 
         if (currentToken == Token.CMD_LOAD && !syntaxError)
             checkData();
-        else if (currentToken == Token.CMD_PUT && !syntaxError)
-            checkDirectAddress("001");
-        else if (currentToken == Token.CMD_GET && !syntaxError)
-            checkDirectAddress("010");
+        else if (currentToken == Token.CMD_PUT && !syntaxError) //TODO: index out of bounds when put
+            setDirectAddress("001");
+        else if (currentToken == Token.CMD_GET && !syntaxError) //TODO: index out of bounds when get
+            setDirectAddress("010");
         else if (currentToken == Token.CMD_INC && !syntaxError)
             commandList.add("0110000000000");
         else if (currentToken == Token.CMD_COMP && !syntaxError)
-            checkDirectAddress("100");
+            setDirectAddress("100");
         else if (currentToken == Token.CMD_JMP && !syntaxError)
             setJumpAddress();
         else if (currentToken == Token.LABEL && !syntaxError)
