@@ -37,21 +37,13 @@ public class Lexer {
 
         moveAhead();
 
-        while (!isExhausted()) {
-            lexems.add(new Lexem(currentToken(), currentLexema()));
+        while (!exhausted) {
+            lexems.add(new Lexem(token, lexema));
             moveAhead();
         }
 
-        if (!isSuccessful())
-            System.out.println(errorMessage());
-/*
-        System.out.println("Lexem list:");
-        for (Lexem lexem: lexems) {
-            System.out.println("Token: " + lexem.getToken() + ", Value: " + lexem.getValue());
-        }
-
- */
-
+        if (!errorMessage.isEmpty())
+            System.out.println(errorMessage);
     }
 
     public ArrayList<Lexem> getLexemList() {
@@ -104,27 +96,7 @@ public class Lexer {
                 return true;
             }
         }
-
         return false;
     }
 
-    public Token currentToken() {
-        return token;
-    }
-
-    public String currentLexema() {
-        return lexema;
-    }
-
-    public boolean isSuccessful() {
-        return errorMessage.isEmpty();
-    }
-
-    public String errorMessage() {
-        return errorMessage;
-    }
-
-    public boolean isExhausted() {
-        return exhausted;
-    }
 }

@@ -10,7 +10,7 @@ public enum Token {
     CMD_GET ("GET"),
     CMD_INC ("INC"),
     CMD_COMP ("COMP"),
-    CMD_CALL ("CALL"),
+    CMD_JMP ("JMP"),
 
     LABEL ("[a-z]+:"),
     ADDR ("\\[\\d+\\]"),

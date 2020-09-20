@@ -2,65 +2,61 @@ package ru.vokazak;
 
 import java.util.ArrayList;
 
-public class VM {
+public class SingleAddressMachine {
 
-    private static final int COMMAND_LENGTH = 3;
-    private static final int ADDRESS_LENGTH = 5;
-    private static final int DATA_LENGTH = 5;
-    private static final int MEMORY_SIZE = 10;
+    private final int COMMAND_LENGTH = 3;
+    private final int ADDRESS_LENGTH = 5;
+    private final int DATA_LENGTH = 5;
+    private final int MEMORY_SIZE = 10;
 
-    private static ArrayList<Integer> dataMemory = new ArrayList<>();
+    private ArrayList<Integer> dataMemory = new ArrayList<>();
+    private ArrayList<String> commandMemory = new ArrayList<>();
 
-    private static int acc = 0;
-    private static boolean flagLess = false;
-    private static boolean flagEquals = false;
-    private static boolean flagGreater = false;
+    private int acc = 0;
+    private boolean flagLess = false;
+    private boolean flagEquals = false;
+    private boolean flagGreater = false;
 
-    public static void main(String[] args) {
+
+    SingleAddressMachine(ArrayList<String> commandMemory) {
+        this.commandMemory = commandMemory;
+        System.out.println(commandMemory);
+
 
         for (int i = 0; i < MEMORY_SIZE; i++) {
             dataMemory.add(0);
         }
-
-        //Integer.toBinaryString(x)
+/*
         decodeString("000xxxxx11011");
         decodeString("00100001xxxxx");
         decodeString("000xxxxx01010");
         decodeString("00100010xxxxx");
         decodeString("10000001");
         decodeString("011xxxxxxxxxx");
-        //decodeString("01000001");
+ */
     }
 
-    private static void decodeString(String string) {
+    private void decodeString(String string) {
         decodeCommand(string.substring(0, COMMAND_LENGTH), string.substring(COMMAND_LENGTH));
     }
 
-    private static void decodeCommand(String command, String data) {
-
-        int dat = 0;
-        try {
-            dat = Integer.parseInt(data.substring(0, ADDRESS_LENGTH), 2);
-        } catch (NumberFormatException e) {}
-
-        try {
-            dat = Integer.parseInt(data.substring(ADDRESS_LENGTH), 2);
-        } catch (NumberFormatException e) {}
+    private void decodeCommand(String command, String s) {
+        int address = Integer.parseInt(s.substring(0, ADDRESS_LENGTH), 2);
 
         switch (Integer.parseInt(command)) {
             case 0:
                 System.out.println("LOAD");
-                acc = dat;
+                acc = Integer.parseInt(s.substring(ADDRESS_LENGTH), 2);;
                 System.out.println("Acc: " + acc);
                 break;
             case 1:
                 System.out.println("PUT");
-                dataMemory.add(dat, acc);
+                dataMemory.add(address, acc);
                 System.out.println("Data memory: " + dataMemory);
                 break;
             case 10:
                 System.out.println("GET");
-                acc = dataMemory.get(dat);
+                acc = dataMemory.get(address);
                 System.out.println("Acc: " + acc);
                 break;
             case 11:
@@ -70,7 +66,7 @@ public class VM {
                 break;
             case 100:
                 System.out.println("COMP");
-                compare(dataMemory.get(dat));
+                compare(dataMemory.get(address));
                 System.out.println("Less: " + flagLess + ", Equals: " + flagEquals + ", Greater: " + flagGreater);
                 break;
             default:
@@ -79,10 +75,9 @@ public class VM {
         }
     }
 
-    private static void compare(int data) {
+    private void compare(int data) {
         System.out.println("Acc: " + acc + ", Data: " + data);
-        int i = Integer.compare(acc, data);
-        switch (i) {
+        switch (Integer.compare(acc, data)) {
             case -1:
                 flagLess = true;
                 flagEquals = false;

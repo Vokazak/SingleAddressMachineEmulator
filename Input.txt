@@ -12,18 +12,18 @@
 	LOAD 10 PUT 10
 	LOAD 1 	PUT 11
 	LOAD 0 	PUT 12
-	
+
 loop:
 	GET 12
 	COMP [11]
 	GET [11]
 	PUT 12
-	
+
 	GET 11
 	INC
 	PUT 11
 
 	GET 10
 	COMP 11
-
-	CALL loop
+	END
+	JMP loop
