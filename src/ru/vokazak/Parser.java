@@ -8,6 +8,7 @@ class Parser {
     private boolean isExhausted;
 
     private String parserErrorMessage = "";
+    private String log = "";
 
     private ArrayList<String> commandList = new ArrayList<>();
     private ArrayList<Loop> loops = new ArrayList();
@@ -27,9 +28,7 @@ class Parser {
     }
 
     boolean isParserErrorMessage() {
-        if (!parserErrorMessage.isEmpty())
-            return true;
-        else return false;
+        return !parserErrorMessage.isEmpty();
     }
 
     public String getParserErrorMessage() {
@@ -47,11 +46,25 @@ class Parser {
         }
     }
 
+    String getParserLog() {
+        log = log.concat("\nCommand list:\n");
+        for (int i = 0; i < commandList.size(); i++) {
+            log = log.concat("\tCommand: " + commandList.get(i) + " (index: " + i + ")\n");
+        }
+        return log;
+    }
+
     private String getBinaryString(String decimalString) {
-        String binaryString = Integer.toBinaryString(Integer.parseInt(decimalString, 10));
-        while (binaryString.length() <5)
-            binaryString = "0".concat(binaryString);
-        return binaryString;
+        int decimal = Integer.parseInt(decimalString, 10);
+        if (decimal < 32) {
+            String binaryString = Integer.toBinaryString(decimal);
+            while (binaryString.length() < 5)
+                binaryString = "0".concat(binaryString);
+            return binaryString;
+        } else {
+            parserErrorMessage = "Parser error: Argument must be less than 31)";
+            return "";
+        }
     }
 
     private void setIndirectAddress(String command) {

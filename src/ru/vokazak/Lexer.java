@@ -16,6 +16,8 @@ class Lexer {
     private String lexerErrorMessage = "";
     private Set<Character> blankChars = new HashSet<>();
 
+    private String log = "";
+
     private ArrayList<Lexem> lexemes = new ArrayList<>();
 
     Lexer(String filePath) {
@@ -54,10 +56,15 @@ class Lexer {
             System.out.println("\t" + lexeme.getValue());
     }
 
+    String getLexerLog() {
+        log = log.concat("Lexeme list:\n");
+        for (Lexem lexeme: lexemes)
+            log = log.concat("\t" + lexeme.getValue() + "\n");
+        return log;
+    }
+
     boolean isLexerErrorMessage() {
-        if (!lexerErrorMessage.isEmpty()) {
-            return true;
-        } else return false;
+        return !lexerErrorMessage.isEmpty();
     }
 
     String getLexerErrorMessage() {
