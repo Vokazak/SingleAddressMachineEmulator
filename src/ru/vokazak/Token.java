@@ -11,13 +11,16 @@ public enum Token {
     CMD_INC ("INC"),
     CMD_COMP ("COMP"),
     CMD_JMP ("JMP"),
+    CMD_ADD ("ADD"),
+    CMD_MUL ("MUL"),
+    CMD_PUT2 ("MPUT"),
 
     LABEL ("[a-z]+:"),
     ADDR ("\\[\\d+\\]"),
     INTEGER ("\\d+"),
     LABEL_NAME ("[a-z]+"),
 
-    //COMMENT ("//[\\r\\n]!"),
+    COMMENT("\\/\\/[a-zA-Z_]*"),
 
     END ("END");
 

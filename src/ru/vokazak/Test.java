@@ -6,10 +6,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -28,8 +25,11 @@ public class Test extends Application {
     private static Background errorBackground;
     private static Background correctBackground;
 
+    private static GraphicMemory graphicMemory;
+
+    private static TextArea lexerTextArea;
+    private static TextArea parserTextArea;
     private static TextArea machineTextArea;
-    private static String log = "";
 
     public static void main(String[] args) {
         defaultBackground = new Background(new BackgroundFill(Color.rgb(220, 220, 250, 0.7), new CornerRadii(5.0), new Insets(-5.0)));
@@ -42,13 +42,13 @@ public class Test extends Application {
     @Override
     public void start(Stage stage) {
 
-        String startText = "";
+        StringBuilder startText = new StringBuilder();
 
         try(FileReader reader = new FileReader(FILE_PATH))
         {
             int c;
             while((c=reader.read()) != -1){
-                startText += (char) c;
+                startText.append((char) c);
             }
         }
         catch(IOException ex){
@@ -57,17 +57,31 @@ public class Test extends Application {
         }
 
         Label enterLabel = new Label("Enter your code here: ");
-        Label logLabel = new Label("Machine log:");
+        Label lexerLabel = new Label("Lexer log:");
+        Label parserLabel = new Label("Parser log");
+        Label machineLabel = new Label("Machine log:");
 
-        TextArea enterTextArea = new TextArea(startText);
+        TextArea enterTextArea = new TextArea(startText.toString());
         enterTextArea.setPrefColumnCount(20);
         enterTextArea.setPrefRowCount(32);
+
+        lexerTextArea = new TextArea();
+        lexerTextArea.setBackground(defaultBackground);
+        lexerTextArea.setPrefColumnCount(15);
+        lexerTextArea.setPrefRowCount(32);
+        lexerTextArea.setEditable(false);
+
+        parserTextArea = new TextArea();
+        parserTextArea.setBackground(defaultBackground);
+        parserTextArea.setPrefColumnCount(25);
+        parserTextArea.setPrefRowCount(32);
+        parserTextArea.setEditable(false);
 
         machineTextArea = new TextArea();
         machineTextArea.setBackground(defaultBackground);
         machineTextArea.setPrefColumnCount(40);
         machineTextArea.setPrefRowCount(32);
-        machineTextArea.cancelEdit();
+        machineTextArea.setEditable(false);
 
         Button compileButton = new Button("Compile");
         compileButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -86,30 +100,38 @@ public class Test extends Application {
                     System.out.println(ex.getMessage());
                 }
 
-               log = "";
+               graphicMemory.resetMemory();
                machineTextArea.setBackground(defaultBackground);
                compile();
 
             }
         });
 
-        FlowPane logPane = new FlowPane(Orientation.VERTICAL, 30, 10, enterTextArea, machineTextArea);
+        FlowPane logPane = new FlowPane(Orientation.VERTICAL, 30, 10, enterTextArea, lexerTextArea, parserTextArea, machineTextArea);
+        graphicMemory = new GraphicMemory();
 
         AnchorPane.setLeftAnchor(enterLabel, 80.0);
         AnchorPane.setTopAnchor(enterLabel, 10.0);
+        AnchorPane.setLeftAnchor(lexerLabel, 370.0);
+        AnchorPane.setTopAnchor(lexerLabel, 10.0);
+        AnchorPane.setLeftAnchor(parserLabel, 640.0);
+        AnchorPane.setTopAnchor(parserLabel, 10.0);
+        AnchorPane.setLeftAnchor(machineLabel, 1030.0);
+        AnchorPane.setTopAnchor(machineLabel, 10.0);
 
         AnchorPane.setLeftAnchor(logPane, 10.0);
         AnchorPane.setTopAnchor(logPane, 40.0);
 
-        AnchorPane.setBottomAnchor(compileButton, 30.0);
+        AnchorPane.setBottomAnchor(compileButton, 100.0);
         AnchorPane.setLeftAnchor(compileButton, 100.0);
 
-        AnchorPane.setTopAnchor(logLabel, 10.0);
-        AnchorPane.setLeftAnchor(logLabel, 380.0);
 
-        AnchorPane generalPane = new AnchorPane(logPane, compileButton, enterLabel, logLabel);
+        AnchorPane.setBottomAnchor(graphicMemory, 10.0);
+        AnchorPane.setLeftAnchor(graphicMemory, 10.0);
 
-        Scene scene = new Scene(generalPane, 800, 660);
+        AnchorPane generalPane = new AnchorPane(logPane, compileButton, enterLabel, lexerLabel, parserLabel,  machineLabel, graphicMemory);
+
+        Scene scene = new Scene(generalPane, 1550, 730);
 
         stage.setScene(scene);
         stage.setTitle("Single address machine");
@@ -118,33 +140,54 @@ public class Test extends Application {
 
     private static void compile() {
 
+        lexerTextArea.clear();
+        parserTextArea.clear();
+        machineTextArea.clear();
+        lexerTextArea.setBackground(defaultBackground);
+        parserTextArea.setBackground(defaultBackground);
+        machineTextArea.setBackground(defaultBackground);
         Lexer lexer = new Lexer(FILE_PATH);
 
         if (!lexer.isLexerErrorMessage()) {
-            //lexer.printLexemeList();
-            log = log.concat(lexer.getLexerLog());
+            String log = lexer.getLexerLog();
+            lexerTextArea.setText(log);
+            lexerTextArea.setBackground(correctBackground);
 
             Parser parser = new Parser(lexer.getLexemeList());
 
             if (!parser.isParserErrorMessage()) {
-                //parser.printCommandList();
-                log = log.concat(parser.getParserLog());
+                log = parser.getParserLog();
+                parserTextArea.setText(log);
+                parserTextArea.setBackground(correctBackground);
 
-                SingleAddressMachine machine = new SingleAddressMachine(parser.getCommandList());
+                SAM machine = new SAM(parser.getCommandList());
 
                 if (!machine.isMachineErrorMessage()) {
-                    log = log.concat(machine.getMachineLog());
+                    log = machine.getMachineLog();
+                    graphicMemory.setMemory(machine.getDataMemory());
+                    machineTextArea.setBackground(correctBackground);
+                    machineTextArea.setText(log);
                     showDone();
-                } else showError(machine.getMachineErrorMessage());
+                } else {
+                    machineTextArea.setBackground(errorBackground);
+                    machineTextArea.setText("ERROR");
+                    showError(machine.getMachineErrorMessage());
+                }
 
-            } else showError(parser.getParserErrorMessage());
+            } else {
+                parserTextArea.setBackground(errorBackground);
+                parserTextArea.setText("ERROR");
+                showError(parser.getParserErrorMessage());
+            }
 
-        } else showError(lexer.getLexerErrorMessage());
+        } else {
+            lexerTextArea.setBackground(errorBackground);
+            lexerTextArea.setText("ERROR");
+            showError(lexer.getLexerErrorMessage());
+        }
     }
 
     private static void showError(String content) {
-        machineTextArea.setBackground(errorBackground);
-        machineTextArea.setText("ERROR");
         alert.setAlertType(Alert.AlertType.ERROR);
         alert.setTitle("Error");
         alert.setHeaderText(content);
@@ -152,8 +195,6 @@ public class Test extends Application {
     }
 
     private static void showDone() {
-        machineTextArea.setBackground(correctBackground);
-        machineTextArea.setText(log);
         alert.setAlertType(Alert.AlertType.INFORMATION);
         alert.setTitle("Done");
         alert.setHeaderText("Program finished successfully");

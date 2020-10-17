@@ -50,16 +50,10 @@ class Lexer {
         return lexemes;
     }
 
-    void printLexemeList() {
-        System.out.println("Lexeme list:");
-        for (Lexem lexeme: lexemes)
-            System.out.println("\t" + lexeme.getValue());
-    }
-
     String getLexerLog() {
         log = log.concat("Lexeme list:\n");
         for (Lexem lexeme: lexemes)
-            log = log.concat("\t" + lexeme.getValue() + "\n");
+            log = log.concat("\t" + lexeme.getToken() + ": " + lexeme.getValue() + "\n");
         return log;
     }
 
