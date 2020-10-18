@@ -1,4 +1,4 @@
-	LOAD 127	PUT 0 
+	LOAD 127	PUT 0
 	LOAD 10 		PUT 1
 	LOAD 49 		PUT 2
 	LOAD 81 		PUT 3
@@ -61,27 +61,5 @@ loop:
 	COMP 11
 	END
 	JMP loop
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

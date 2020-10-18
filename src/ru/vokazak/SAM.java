@@ -14,10 +14,10 @@ public class SAM {
     private int acc;
     private int acc2;
 
-    private boolean flagLess = false;
-    private boolean flagEquals = false;
-    private boolean flagGreater = false;
-    private boolean flagOvf = false;
+    private boolean flagLess;
+    private boolean flagEquals;
+    private boolean flagGreater;
+    private boolean flagOvf;
 
     private String machineErrorMessage;
     private String log;

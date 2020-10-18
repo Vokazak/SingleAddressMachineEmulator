@@ -20,7 +20,7 @@ public enum Token {
     INTEGER ("\\d+"),
     LABEL_NAME ("[a-z]+"),
 
-    COMMENT("\\/\\/[a-zA-Z_]*"),
+    COMMENT("\\/\\/[a-zA-ZА-Яа-я_]*"),
 
     END ("END");
 
