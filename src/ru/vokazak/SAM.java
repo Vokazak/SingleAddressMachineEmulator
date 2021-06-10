@@ -8,8 +8,8 @@ public class SAM {
     public static final int FIELD_LENGTH = 7;
     public static final int MEMORY_SIZE = 20;
 
-    private ArrayList<Integer> dataMemory;
-    private ArrayList<String> commandMemory;
+    private final ArrayList<Integer> dataMemory;
+    private final ArrayList<String> commandMemory;
 
     private int acc;
     private int acc2;
@@ -20,12 +20,12 @@ public class SAM {
     private boolean flagOvf;
 
     private String machineErrorMessage;
-    private String log;
+    private final StringBuilder log;
 
     SAM(ArrayList<String> commandMemory) {
         this.commandMemory = commandMemory;
         machineErrorMessage = "";
-        log = "Machine work:\n";
+        log = new StringBuilder("Machine work:\n");
 
         dataMemory = new ArrayList<>();
         for (int i = 0; i < MEMORY_SIZE; i++) {
@@ -63,7 +63,7 @@ public class SAM {
     }
 
     String getMachineLog() {
-        return log;
+        return log.toString();
     }
 
     private boolean addressIsValid(int address) {
@@ -94,57 +94,57 @@ public class SAM {
             case 0:
                 if (!accIsValid())
                     break;
-                log = log.concat("LOAD\n");
+                log.append("LOAD\n");
                 acc = info;
-                log = log.concat("\tAcc: " + acc + "\n");
+                log.append("\tAcc: ").append(acc).append("\n");
                 runCommand(commandIndex + 1);
                 break;
 
             case 1:
-                log = log.concat("PUT " + acc + " to cell " + address + "\n");
+                log.append("PUT ").append(acc).append(" to cell ").append(address).append("\n");
                 if (!addressIsValid(address))
                     break;
                 dataMemory.set(address, acc);
-                log = log.concat("\tData memory: " + dataMemory + "\n");
+                log.append("\tData memory: ").append(dataMemory).append("\n");
                 runCommand(commandIndex + 1);
                 break;
 
             case 10:
-                 log = log.concat("GET (" + address + ")\n");
+                 log.append("GET (").append(address).append(")\n");
                  if (!addressIsValid(address))
                      break;
                  if (info == 0)
                      acc = dataMemory.get(address);
                  else acc = dataMemory.get(dataMemory.get(address));
-                 log = log.concat("\tAcc: " + acc + "\n");
+                 log.append("\tAcc: ").append(acc).append("\n");
                  runCommand(commandIndex + 1);
                  break;
 
             case 11:
-                log = log.concat("INC\n");
+                log.append("INC\n");
                 acc ++;
                 if (!accIsValid())
                     break;
-                log = log.concat("\tAcc: " + acc + "\n");
+                log.append("\tAcc: ").append(acc).append("\n");
                 runCommand(commandIndex + 1);
                 break;
 
             case 100:
-                log = log.concat("COMP\n");
+                log.append("COMP\n");
                 if (!addressIsValid(address))
                     break;
                 if (info == 0)
                     compare(dataMemory.get(address));
                 else compare(dataMemory.get(dataMemory.get(address)));
 
-                log = log.concat("\tLess: " + flagLess + ", Equals: " + flagEquals + ", Greater: " + flagGreater  + "\n");
+                log.append("\tLess: ").append(flagLess).append(", Equals: ").append(flagEquals).append(", Greater: ").append(flagGreater).append("\n");
                 if (!flagLess)
                     runCommand(commandIndex + 1);
                 else runCommand(commandIndex + 2);
                 break;
 
             case 101:
-                 log = log.concat("JUMP\n");
+                 log.append("JUMP\n");
                  try {
                      runCommand(address);
                  } catch (StackOverflowError e) {
@@ -154,7 +154,7 @@ public class SAM {
                  break;
 
             case 110:
-                log = log.concat("ADD\n");
+                log.append("ADD\n");
                 if (!addressIsValid(address))
                     break;
                 if (info == 0)
@@ -167,14 +167,14 @@ public class SAM {
                 break;
 
             case 1001:
-                log = log.concat("MUL\n");
+                log.append("MUL\n");
                 if (!addressIsValid(address))
                     break;
                 if (info == 0)
                     mul(dataMemory.get(address));
                 else mul(dataMemory.get(dataMemory.get(address)));
 
-                log = log.concat("\tACC: " + acc + ", ACC2: " + acc2 + ", flagOVF: " + flagOvf + "\n");
+                log.append("\tACC: ").append(acc).append(", ACC2: ").append(acc2).append(", flagOVF: ").append(flagOvf).append("\n");
 
                 if (!flagOvf)
                     runCommand(commandIndex + 1);
@@ -182,16 +182,16 @@ public class SAM {
                 break;
 
             case 1010:
-                log = log.concat("PUT from ACC2 (MPUT) " + acc2 + " to cell " + address + "\n");
+                log.append("PUT from ACC2 (MPUT) ").append(acc2).append(" to cell ").append(address).append("\n");
                 if (!addressIsValid(address))
                     break;
                 dataMemory.set(address, acc2);
-                log = log.concat("\tData memory: " + dataMemory + "\n");
+                log.append("\tData memory: ").append(dataMemory).append("\n");
                 runCommand(commandIndex + 1);
                 break;
 
             case 111:
-                log = log.concat("DONE\n");
+                log.append("DONE\n");
                 return;
 
             default:
@@ -222,11 +222,11 @@ public class SAM {
         } else flagOvf = false;
 
         acc = Integer.valueOf(result, 2);
-        log = log.concat("ACC: " + acc + ", OVF flag: " + flagOvf + "\n");
+        log.append("ACC: ").append(acc).append(", OVF flag: ").append(flagOvf).append("\n");
     }
 
     private void compare(int data) {
-        log = log.concat("\tAcc: " + acc + ", Data: " + data + "\n");
+        log.append("\tAcc: ").append(acc).append(", Data: ").append(data).append("\n");
         switch (Integer.compare(data, acc)) {
             case -1:
                 flagLess = true;

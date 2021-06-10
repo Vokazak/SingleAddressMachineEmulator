@@ -15,7 +15,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class Test extends Application {
+public class Main extends Application {
 
     private static final String FILE_PATH = "Input.txt";
 
